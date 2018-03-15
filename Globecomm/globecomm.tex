@@ -1,0 +1,172 @@
+\documentclass[letterpaper,conference,10pt]{IEEEtran}
+
+\usepackage{amsmath,amssymb}
+\usepackage{acronym,etoolbox}
+\usepackage{graphicx,epstopdf}
+\usepackage[ruled]{algorithm2e}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[subrefformat=parens,labelformat=parens,labelseparator=period,caption=false,font=footnotesize]{subfig}
+\usepackage{multirow,cite,setspace,fixltx2e,lineno,verbatim,mathtools,url,cases,algorithmic,subeqnarray}
+
+\graphicspath{{./Figures/}}
+\DeclareGraphicsExtensions{{.pdf}}
+
+\title{Complexity Reduction and Interference Management via User Clustering in Two-Stage Precoder Design}
+
+\author{\IEEEauthorblockN{Ayswarya Padmanabhan and Antti T\"{o}lli}%\thanks{Thanks to XYZ agency for funding.}}
+	\IEEEauthorblockA{Centre for Wireless Communications (CWC), University of Oulu, Finland - FI-90014 \\
+		Email: firstname.lastname@oulu.fi}} 
+
+\input{acronyms}
+\input{shortcuts}
+
+\begin{document}
+
+	\maketitle	
+	
+	\begin{abstract}
+		We consider a single cell \ac{DL} massive \ac{MIMO} set-up with user clustering based on statistical information. The problem is to design a fully digital two-stage beamforming aiming to reduce the complexity involved in the conventional \ac{MIMO} processing. The fully digital two-stage beamforming consists of a slow varying channel statistics based \ac{OBF} and an \ac{IBF} accounting for fast channel variations. Two different methods are presented to design the \ac{OBF} matrix, so as to reduce the size of the effective channel used for \ac{IBF} design. A group specific two-stage optimization problem with \ac{WSRM} objective is formulated to find the \ac{IBF} for fixed \ac{OBF}. We begin by proposing centralized \ac{IBF} design were the optimization is carried out for all sub group jointly with user specific inter-group interference constraints. In order to further reduce the complexity, we also propose a group specific \ac{IBF} design by fixing the inter group interference to a constant or by ignoring them from the problem altogether. In spite of incurring a small loss in performance, the computational complexity can be saved to a large extent with the group specific processing. Numerical experiments are used to demonstrate the performance of various proposed schemes by comparing the total sum rate of all users and the design complexity. 
+	\end{abstract}
+
+	\acresetall
+	
+	\section{Introduction}
+		Massive \ac{MIMO} is considered to be the future enabling technology for 5G cellular communication standards \cite{ marzetta2010noncooperative, rusek2013scaling, boccardi2014five}. This system can support increased data rate, reliability, diversity due to increased \ac{DoF} and beamforming gain. However, the downside of massive \ac{MIMO} is the increased computational complexity, since the conventional \ac{MIMO} processing involves higher dimensional matrix operations to determine transmit beamformers based on user \ac{CSI}. Hence, complexity reduction in massive \ac{MIMO} has gained lot of attention among researchers \cite{liang2014low,molisch2017hybrid,adhikary2013joint}. This is done in both hybrid (analog/digital) beamforming \cite{molisch2017hybrid} and fully digital beamforming \cite{adhikary2013joint}. As we know, hybrid beamforming is a combination of analog \ac{OBF} implemented with analog \ac{RF} front-end and a digital \ac{IBF}. The analog beamformer sets pre-beams to the spatially separated users and reduces the effective channel dimensions to reduce the complexity. 
+		
+		In recent years, the most noticed fully digital two stage beamforming is \ac{JSDM} \cite{adhikary2013joint}. The main idea of \ac{JSDM} lies in grouping users based on similar transmit correlation matrices to form \ac{OBF}. In \cite{adhikary2013joint}, author discusses various methods to form the \ac{OBF} and analyze the performance using the techniques of deterministic equivalents for namely, joint group and per-group processing. In \cite{nam2014joint, nam2015user, xu2014user} \ac{JSDM} was studied extensively for user grouping, %. Several other techniques in addition to \ac{JSDM} for two-stage precoding is suggested, 
+		whereas in~\cite{liu2014hierarchical} the \ac{OBF} and the \ac{IBF} were used to control the inter and intra-cell interference, respectively. In \cite{arvola2016two}, two-stage precoding was explored for different heuristic \ac{OBF} methods and the performance was evaluated as a function of statistical pre-beams. 
+		
+		In practice, the cellular users tend to be collocated geographically, leading to a user grouping that can be considered by the \ac{BS} while designing the transmission strategy. Unlike in \cite{arvola2016two}, we focus on group specific two-stage beamformer design. For this design, the \ac{OBF} is based on long term channel statistics and these beams are used to effectively reduce the dimensions of the equivalent channels (product between the antenna specific channels and OBF). The main advantage of the statistics based \ac{OBF} is that it varies over long time scales compared to the \ac{IBF} that requires more frequent updates. This motivates us to consider different methods to form the outer beamformer by choosing a) Eigenvectors corresponding to the strongest eigenvalues of the (group specific) channel covariance matrices and b) \ac{DFT} based orthogonal beams that aligns with the precise channel covariance matrix. The \ac{IBF} in turn is applied for spatial multiplexing on the equivalent channel and helps to manage both intra- and \ac{IGI} similarly to handling inter-cell interference in a multi-cell scenario~\cite{venkatraman2016traffic}. Weighted sum rate maximization (\acs{WSRM}) problem is formulated to optimize the \ac{IBF} for a fixed \ac{OBF}. We propose a centralized \ac{IBF} design wherein the optimization is carried out for all sub-groups jointly. The inter-group interference is managed by introducing  user specific \ac{IGI} constraints To further reduce the complexity, we also considered a group specific \ac{IBF} design by fixing the inter-group interference to a fixed predetermined value or by completely ignoring them from the \ac{IBF} problem formulation.	
+		
+		
+	\section{System Model}
+%		\begin{figure}
+%			\centering 			
+%			\includegraphics[trim=1.2in 1.0in 1.2in 1.0in, clip, width=0.9\columnwidth]{Figures/systemModel.pdf}
+%			\caption{System Model.}
+%			\label{systemModel}		\vspace{-1.2eM}
+%		\end{figure}
+		We consider a \ac{DL} massive \ac{MIMO} system as shown in Fig. \ref{systemModel} consisting of single \ac{BS} equipped with \me{N_T} transmit antennas in \ac{ULA} pattern with \me{\frac{\lambda}{2}} spacing between elements serving \me{K} single-antenna \ac{UT}. In this system, \eqn{N_T > K}, i.e, the users can be multiplexed in the spatial dimension. Even though the users are distributed uniformly around the \ac{BS}, they tend to be collocated geographically, leading to a natural user clustering that can be considered by the \ac{BS} while designing the transmission strategy. Thus, the users can be clustered into, say, \eqn{G} number of user clusters with \eqn{\mc{G} = \{1,2,\ldots, G\}} representing the set of user groups. Let \eqn{\mc{U}_g} be the set of all users assigned to user group \eqn{g \in \mc{G}} and \eqn{\mc{U} = \cup_{g \in \mc{G}} \, \mc{U}_g} be the set of all users served by the \ac{BS}. The channel seen between the \ac{BS} and user \me{k \in \mathcal{U}} is denoted by \me{\mathbf{h}_{k} \in \mathcal{C}^{N_T \times 1}} while the beamforming vector for user \me{k} is given by \me{\mathbf{v}_{k} \in \mathbb{C}^{N_T \times 1}}. The transmitted data symbol for user \me{k} is denoted by \me{x_{k}} with \me{\mathbb{E}[|x_{k}|^2] \leq 1, \forall k \in \mathcal{U}} and \me{n_{k}} corresponds to the additive white Gaussian noise with \eqn{n_k \sim \mc{CN}(0,N_0)}. Now, by using this setting, the signal \eqn{y_k} received by user \eqn{k \in \mc{U}_g} is given by
+		\begin{multline}\label{icassp1}
+		y_k = \mathbf{h}_{k}^{\herm} \mathbf{v}_{k} x_{k} \!\!+\!\! \sum_{\mathclap{i \in \mc{U}_{g} \backslash \{k\}}} \mathbf{h}_{k}^{\herm} \mathbf{v}_{i} x_{i} \!\! +\!\! \sum_{\mathclap{\substack{j \in \mathcal{U}_{\bar{g}}, \\ \bar{g} \in \mathcal{G} \backslash \{g\}}}} \mathbf{h}_{k}^{\herm} \mathbf{v}_{j} x_{j}\!\! + {n}_{k}
+		\end{multline}
+		where the first term in \eqref{icassp1} is the desired signal while the second and third terms represent intra- and inter-group interference.
+		
+		To design channel based on user location in the azimuthal direction, we model it using geometric ring model \cite{Molisch2012} as
+		\begin{equation}\label{icassp2}
+		\mathbf{h}_k = \dfrac{\beta_k}{\sqrt{L}} \sum_{l=1}^{L} e^{j \, \phi_{k,l}} \, \mathbf{a}(\theta_{k,l})
+		\end{equation}
+		where \me{\beta_k} represents the path loss between the \ac{BS} and user \me{k}, \me{L} denotes the number of scatterers and \me{\phi_{k,l}} corresponds to the random phase introduced by each scatterer \eqn{l}. The scatterers are assumed to be located uniformly around each user with certain angular spread, say, \eqn{\sigma_{k}} and the steering vector \eqn{\mbf{a}(\theta_{k,l})} corresponding to \ac{AoD} \eqn{\theta_{k,l} \in U(0,\sigma_{k,l})} is given by \me{
+			\mathbf{a}(\theta_{k,l}) = \Big [ 1, \, e^{j \, \pi \cos(\theta_{k,l})}, \ldots, e^{ j \, \pi \cos(\theta_{k,l}) (N_T - 1) }  \Big ]^\tran.}
+		
+		Unlike the traditional \ac{MIMO} transmission techniques, we adopt a two-stage precoder design consisting of \ac{OBF} and \ac{IBF}, which together characterize the total precoder matrix used to transmit respective data to all users in \eqn{\mc{U}}. %As the number of antenna elements increases, the complexity involved in the precoder design scales-up quickly even for \ac{ZF} based transmission, which is \eqn{\approx \mc{O}(N_T^3)}. Furthermore, due to the clustering of users geographically, beamformers can be designed efficiently with significantly reduced complexity. 
+		Let \eqn{\mbf{V} = \mbf{B} \mbf{W}} be the total precoding matrix with \eqn{\mbf{V} \in \mathbb{C}^{N_T \times K}}, which is obtained by combining \ac{OBF} matrix \eqn{\mbf{B} \in \mathbb{C}^{N_T \times S}} and \ac{IBF} matrix \eqn{\mbf{W} \in \mathbb{C}^{S \times K}}, where \eqn{S} represents the number of statistical beams used by the \ac{BS} to serve user groups that are separated geographically in the azimuthal dimension. Let \eqn{S_g} be the number of statistical beams that are oriented towards each user group \eqn{g \in \mc{G}}, leading to \eqn{\sum_{g \in \mc{G}} S_g = S} number of statistical beams in total. Similarly, let \me{\mathbf{B}_g} contain all statistical beams corresponding to the users in group \me{g}, such that \me{ \mathbf{B} = [\mathbf{B}_1, \dotsc, \mathbf{B}_G]}. Hence, the \ac{SINR} for user \eqn{k \in \mc{U}_g} is given by
+		\begin{equation}\label{icassp5}
+		\textstyle \gamma_{k} = \dfrac{|\mathbf{h}_{k}^\herm \mathbf{B}_{g_k} \mathbf{w}_{k}|^2}{{\displaystyle\sum_{\mathclap{\substack{i \in \mathcal{U}_{g} \backslash \{k\}}}}| \mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{i} |^2 + {  \sum_{\mathclap{\substack{j \in \mathcal{U}_{\bar{g}},\\  \bar{g} \in {\mathcal{G}} \backslash \{g\}}}}} |\mathbf{h}_{k}^\herm \mathbf{B}_{\bar{g}} \mathbf{w}_{j} |^2 + N_0}}.
+		\end{equation}
+		where index $g_k$ indicates the user group of user $k$.
+		
+		We consider the problem of \ac{WSRM} objective for designing the transmit precoders, which is given by
+		\begin{equation}\label{icassp6}
+		R = \sum_{g \in \mathcal{G}} \sum_{k \in \mathcal{U}_{g}} \alpha_{k} \log_2(1+\gamma_{k}) \Rightarrow \sum_{k \in \mathcal{U}} \alpha_{k} \log_2(1+\gamma_{k})
+		\end{equation}
+		where \me{\alpha_{k} \geq 0} is a user specific weight, which determines the scheduling priority. 
+		
+	\section{Precoder Design}	\label{pre_des}	
+	In this section we briefly discuss the design of both the \ac{OBF} \me{\mathbf{B}} and the \ac{IBF} \me{\mathbf{W}} with the objective of maximizing the total sum rate. In order to reduce the complexity involved in the design of transmit precoders, we fix the outer beamformers while optimizing for the inner precoders. We begin by describing the design of outer beamformers, which is then followed by the \ac{IBF} design based on the \ac{WSRM} objective \vspace{-0.8eM}.
+	
+	\subsection{Outer Precoder Design using Statistical Channel}	\label{outpre}	
+	Unlike the conventional \ac{MIMO}, the two-stage beamformer design involves both the inner and the outer beamformers so as to reduce the computational complexity. The \ac{OBF} plays a major role in determining the overall performance as it is common to all the users in the group. Designing both outer and inner beamformers is a challenging task as they are inter-dependent. Thus, we adopt a sub-optimal strategy wherein the \ac{OBF} is designed based on long-term channel statistics followed by the \ac{IBF} design with fixed outer beamforming vectors. We present two well known heuristic methods to find outer beamformers, namely, Eigen and greedy \ac{DFT} beams.
+	
+	\subsubsection{Eigen Beam Selection}	
+	The channel statistics of all users are assumed to remain relatively constant for a period of time. In such cases, the eigenvectors of the channel covariance matrix can be used to form the outer precoding matrix via \ac{EVD} \cite{adhikary2013joint,arvola2016two}. Let \eqn{\mbf{H}_g = [\mbf{h}_{\mc{U}_{g(1)}}, \ldots, \mbf{h}_{\mc{U}_g(|\mc{U}_g|)}]} be the stacked channel matrix of all users in group $g$ and let \eqn{\mbf{R}_g = \mathbb{E} \big[ \mbf{H}_g \mbf{H}_g^\herm \big ] } be the corresponding channel covariance matrix. Now, by decomposing \eqn{\mbf{R}_g} using \ac{EVD}, we obtain \me{\mathbf{R}_g = \mathbf{U}_g\mathbf{\Lambda}_g\mathbf{U}_g^{\herm}}, where the column vectors of \eqn{\mbf{U}_g \in \mathbb{C}^{N_T \times S_g}} correspond to the eigenvectors and the respective eigenvalues are stacked diagonally in \eqn{\mbf{\Lambda}_g \in \mathbb{C}^{S_g \times S_g}}. Now, by choosing \eqn{S_g} columns of \eqn{\mbf{U}_g}, which is denoted by \eqn{\mbf{U}_g(S_g)}, corresponding to the \eqn{S_g} largest eigenvalues in \eqn{\text{diag}(\mbf{\Lambda}_g)}, we obtain the outer precoding matrix \eqn{\mbf{B}_g = \mbf{U}_g(S_g) \in \mathbb{C}^{N_T \times S_g}} containing \eqn{S_g} predominant spatial signatures.	
+	\subsubsection{Greedy Beam Selection}	
+	As the number of users in the system increases, the probability of finding a user in the azimuthal direction follows the uniform distribution, i.e., \eqn{\theta_{k} \in [-\pi, \pi]}. Thus, in the limiting case, the column vectors of \eqn{\mbf{U} \in \mathbb{C}^{N_T \times N_T}} corresponding to the channel covariance \eqn{\mbf{R}, \forall k \in \mathcal{U}} can be approximated to the columns of \ac{DFT} matrix \eqn{\mbf{D} = [\mbf{d}_1, \dotsc, \mbf{d}_{S}] \in \mathbb{C}^{N_T \times S}} with \eqn{\mbf{D} \mbf{D}^\herm = \mbf{I}_{N_T}}, where the \eqn{\ith{k}} column vector of \eqn{\mbf{D}} is given by
+	\begin{equation}
+	\textstyle  \mbf{d}_{k} = \frac{1}{\sqrt{N_T}} \left [ \mbf{1}, e^{j2\pi k / N_T}, \ldots,  e^{j2\pi k (N_T-1) / N_T} \right ]^\herm.
+	\end{equation}
+	The \ac{OBF} matrix based on \ac{DFT} columns aids in multiplexing data into multiple high directional (high gain) beams \cite{adhikary2013joint}. Thus, the problem reduces to finding a subset of column vectors from the unitary \ac{DFT} matrix. To do so, we select \eqn{S_g} \ac{DFT} column vectors that maximizes the following metric for each group \eqn{g} by initializing \eqn{\mc{D} = \{1,2,\dotsc,N_T \}} and \eqn{\mc{B}_g = \emptyset} as
+	\begin{eqnarray}           
+	\textstyle 	k &=& \underset{i}{\text{argmax}} \;(\mathbf{d}_{i}^\herm \, \mathbf{R}_{g} \, \mbf{d}_{i} ), \, \forall i \in \mc{D} \nonumber \\
+	\textstyle \mc{B}_g &=& \mc{B}_g \cup \{k\},   \quad \mc{D} = \mc{D} \backslash \mc{B}_g.  
+	\end{eqnarray}
+	Upon finding subset \eqn{\mc{B}_g}, the group specific \ac{OBF} is given by \eqn{\mbf{B}_g = [\mbf{d}_{\mc{B}(1)},\dotsc,\mbf{d}_{\mc{B}(|\mc{B}|)}]}. Thus, the resulting \ac{OBF} matrix \me{\mbf{B}_g} consisting of orthogonal \ac{DFT} beams include strongest signal paths of each group.
+	\vspace{-1.2eM}
+	\subsection{Group-Specific Inner Beamformer Design}	\label{inpre}
+	Unlike the conventional \ac{MIMO} beamforming wherein the precoders are designed by considering only the instantaneous user channels, the inner beamformers in the two-stage precoding considers both the user's channel and the group specific outer beamformers that alters the effective channel seen by the \ac{BS}.	Instead of serving all users in a single group possibly with reduced dimensions $S\leq N_{\mathrm T}$ as in~\cite{arvola2016two}, herein, a group specific beamformer design is proposed so as to further reduce the computational complexity (i.e., \ac{IBF} size $S_g$) involved in the beamformer design. The main objective of inner beamformers is to maximize the received signal power at the intended user terminal in a given group while minimizing the interference caused to the other terminals in the same group and the ones in other groups. In the following, we first introduce a centralized design where the inter-group interference is handled via \ac{IGI} constraints/variables. Then, a group specific \ac{IBF} design with fixed (or ignored) \ac{IGI} values is presented.
+	\subsubsection{Centralized Formulation}	\label{cent}
+	In order to design beamformers for each group with reduced dimensions, the interference term in the denominator of the \ac{SINR} constraint in \eqref{icassp5} can be rewritten for each user \eqn{k \in \mc{U}_g} as
+	\begin{eqarray}{L}{interference_equivalent}
+		\textstyle 	\sum_{i \in \mathcal{U}_{g} \backslash \{k\}} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{m \in \mathcal{G} \backslash \{g\}} \zeta_{m,k} + N_0 \\
+		\textstyle \sum_{{ j \in \mathcal{U}_{\bar{g}}}} |\mathbf{h}_{k}^\herm \mathbf{B}_{\bar{g}} \mathbf{w}_{j} |^2 \; \leq \; \zeta_{\bar{g},k} , \; \forall \bar{g} \in \mc{G} \backslash \{g\}
+	\end{eqarray}
+	where \eqn{\zeta_{\bar{g},k}} limits the interference caused by the neighboring group \eqn{\bar{g} \in \mc{G} \backslash \{g\}} to user \eqn{k \in \mc{U}_g}. By introducing new variable \eqn{\zeta_{\bar{g},k}}, the inner beamformer can be designed for each group independently by exchanging only the group specific interference \eqn{\zeta_{\bar{g},k}} threshold across the groups. Thus, the problem of inner beamformer design is given by
+	\begin{eqarray}{rCL}{icassp8}
+		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}, \mbfa{\zeta}_g} {\text{maximize}}  & \quad & \sum_{g \in \mc{G}} \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})   \nonumber \\
+		\text{subject to} &\quad& \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}|^2}{b_{k}} \geq \gamma_{k}, \; \forall k \in \mc{U} \label{icassp8_a}\\
+		&& \sum_{\mathclap{i \in \mathcal{U}_{g_k}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g_k\}}} \zeta_{\bar{g},k} + N_0 \leq b_{k}\eqspace \label{icassp8_b} \\
+		&&\displaystyle\sum_{\substack{k \in \mathcal{U}_{{g_k}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g_k}} \mathbf{w}_{k} |^2 \leq  \zeta_{{g_k},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_{g_k}} \eqspace\ \label{icassp8_d}\\
+		&& \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq P_{\mrm{\mrm{tot}}}  \label{icassp8_e}
+	\end{eqarray}
+	where \eqn{\zeta_{\bar{g},k}, \forall \bar{g} \in \mc{G} \backslash \{g_k\}} are the inter-group interference terms, which couples the \ac{IBF} design problem.
+	
+	In spite of relaxing the \ac{SINR} expression in \eqref{icassp5} using \eqref{icassp8_a} and \eqref{icassp8_b}, \eqref{icassp8} is still nonconvex due to the \textit{quadratic-over-linear} constraint \eqref{icassp8_a} \cite{boyd2004convex}. Thus, to solve problem \eqref{icassp8} efficiently, we resort to the \ac{SCA} technique wherein the nonconvex constraint is replaced by a sequence of approximate convex subsets, which is then solved iteratively until convergence \cite{Scutari2017a}. We note that the LHS of \eqref{icassp8} is convex, therefore we resort to the first order Taylor approximation of \textit{quadratic-over-linear} function around some operating point, say, \eqn{\{ \mbf{w}_k^{(i)}, b_k^{(i)} \}}, is given by 
+	\begin{equation} \label{sinr_relax}
+	\dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}|^2}{{b}_{k}} \geq \mathcal{F}_{k}^{(i)} (\mathbf{w}_{k}, {b}_{k};\mathbf{w}_{k}^{(i)}, {b}_{k}^{(i)})
+	\end{equation}
+	where the first order approximation \eqn{\mathcal{F}_{k}^{(i)} (\mathbf{w}_{k}, {b}_{k};\mathbf{w}_{k}^{(i)}, {b}_{k}^{(i)})} is an under-estimator for the LHS term in \eqref{sinr_relax} is given by \cite{venkatraman2016traffic}
+	\begin{multline}\label{icassp10}
+	\mathcal{F}_{k}^{(i)} (\mathbf{w}_{k}, b_{k};\mathbf{w}_{k}^{(i)}, b_{k}^{(i)}) \triangleq 2 \, \dfrac{\mathbf{w}_{k}^{(i) \herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{b^{(i)}_k} \big( \mathbf{w}_{k} - \mathbf{w}_{k}^{(i)}\big) \eqspace \\
+	+ \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}^{(i)}|^2}{b_{k}^{(i)}} \Big( 1 - \dfrac{b_{k} - b_{k}^{(i)}}{b_{k}^{(i)}} \Big).
+	\end{multline}
+	
+	Now, by using the above approximation in \eqref{icassp10}, an approximate convex reformulation of \eqref{icassp8} is given by
+	\begin{eqarray}{rCL}{centralized_design}
+		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}, \mbfa{\zeta}_g} {\text{maximize}}  & \quad & \sum_{g \in \mc{G}} \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
+		\text{subject to} &\quad& \eqref{icassp8_b}-\eqref{icassp8_e}, \; \eqref{icassp10}.
+	\end{eqarray}
+	The resulting problem \eqref{centralized_design} is solved iteratively until convergence by updating the operating point with the solution obtained from the previous iteration. Thus, upon convergence, the resulting inner beamforming vectors \eqn{\mbf{w}_k \in \mathbb{C}^{S_g \times 1}, \forall k \in \mc{U}_g} determine the linear combination of \ac{OBF} column vectors of \eqn{\mbf{B}_g} that maximizes the overall sum rate of all users.
+	
+	\subsubsection{Group Specific Beamformer Design}
+	Unlike the centralized approach presented in Section \ref{cent}, the beamformers are designed independently by either fixing the inter-group interference to a fixed value or by ignoring them from the formulation. By doing so, the complexity involved in the design of inner beamformers reduces significantly as the number of optimization variables is limited. Thus, the group specific beamformer design for group \eqn{g \in \mc{G}} is given by
+	\begin{eqarray}{rCL}{group_specific}
+		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}} {\text{maximize}}  & \quad &  \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
+		\text{subject to} &\quad& \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0 \leq b_{k} \eqspace \label{group_specific_1} \\
+		&&\sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 \leq  \bar{\zeta}_{{g},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_g} \eqspace\ \label{group_specific_2} \\
+		&& \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq \frac{P_{\mrm{tot}}}{G}, \eqref{icassp8_a}, \text{ and } \eqref{icassp10} \eqspace 
+	\end{eqarray}
+	where \eqn{\bar{\zeta}_{g,i}} is the constant interference value that is fixed before solving the optimization problem. Setting \eqn{\bar{\zeta}_{g,i} = 0,\, \forall i \in \mc{U} \backslash \{ \mc{U}_g\} } yields group zero-forcing solution. The proposed group specific beamformer design with fixed inter-group interference limit reduces the problem complexity significantly compared to that of the centralized design. However, due to the fixed interference threshold, the performance will be inferior compared to the centralized approach. A choice of \eqn{\bar{\zeta}_{g,i}} can be obtained, e.g., from the statistics of inter-group interference.
+	
+	Finally, by replacing \eqn{\mbf{B}_g} by \eqn{\mbf{B} = [\mbf{B}_{\mc{G}(1)}, \dotsc, \mbf{B}_{\mc{G}(|\mc{G}|)}]} in \eqref{centralized_design} or \eqref{group_specific_2}, we obtain two-stage beamformer design without user grouping, i.e., \eqn{\mbf{w}_k \in \mathbb{C}^{S \times 1}}, leading to a fully connected design (FC). This is equivalent to \cite{arvola2016two} when \eqn{G = 1} is used in~\eqref{centralized_design}. By doing so, the inner beamformer finds a linear combination of all the available outer beamforming vectors, i.e., \eqn{S} spatial beams to serve any user in the system.
+	
+	\subsubsection{Iterative Solution}
+	
+	An iterative solution for \ref{centralized_design} can be obtained via the \ac{KKT} conditions \cite{boyd2004convex}, of the problem. Since the problem is convex, each \ac{KKT} point is the global optimum of the problem.
+	
+	The \ac{KKT} conditions of the problem can be formulated as follows,
+	\begin{eqarray}{rCL}{group_specific}
+		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}} {\text{maximize}}  & \quad &  \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
+		\text{subject to} &\quad& a_k: \eqref{icassp10} \geq \gamma_k\\
+		&& b_k: \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0 \leq b_{k} \eqspace \label{group_specific_1} \\
+		&&c_k: \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 \leq  \bar{\zeta}_{{g},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_g} \eqspace\ \label{group_specific_2} \\
+		&&d_k: \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq \frac{P_{\mrm{tot}}}{G},  \eqspace 
+	\end{eqarray}
+	
+	The Lagrangian can be written as
+	\begin{multline}\label{Lag}
+	 L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_k, d_k) = -\sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}}) +  \\  \sum_{k \in \mathcal{U}_g} a_k  [ \gamma_k - 2 \, \dfrac{\mathbf{w}_{k}^{(i) \herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{b^{(i)}_k} \big( \mathbf{w}_{k} - \mathbf{w}_{k}^{(i)}\big) \eqspace \\
+	 + \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}^{(i)}|^2}{b_{k}^{(i)}} \Big( 1 - \dfrac{b_{k} - b_{k}^{(i)}}{b_{k}^{(i)}} \Big)] \\ + \sum_{k \in \mathcal{U}_g} b_k [  \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2  + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0  - \beta_k] \\ + \sum_{k \in \mathcal{U}_g} c_k [ \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 - \bar{\zeta}_{{g},i} ] + d_k [\sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 - \frac{P_{\mrm{tot}}}{G}]
+	\end{multline}
+	
+	Differentiating the \eqref{Lag} with respect to each variable, we obtain,
+	\begin{eqnarray}
+		\frac{\delta L} {\delta \gamma_k} \Rightarrow a_k &=& \frac{1}{(1+ \gamma_k)}\\
+		\frac{\delta L}{\delta \beta_k} \Rightarrow b_k &=& \frac{| \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{k} |^2}{\bar{\beta}_k} a_k \\
+		\frac{\delta L}{\delta \zeta_{g,k}} \Rightarrow c_k &=& b_k \\
+		\frac{\delta L}{\delta \mbf{w}_k} \Rightarrow \mbf{w}_k &=&  .
+	\end{eqnarray}
+	
+	
+\bibliographystyle{IEEEtranBST2/ieeetran}
+\bibliography{IEEEtranBST2/IEEEabrv,references}	
+\end{document}
