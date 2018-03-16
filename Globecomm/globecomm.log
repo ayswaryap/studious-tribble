@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9) (preloaded format=pdflatex 2016.11.1)  15 MAR 2018 16:28
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9) (preloaded format=pdflatex 2016.11.1)  16 MAR 2018 14:51
 entering extended mode
 **./globecomm.tex
 (globecomm.tex
@@ -539,17 +539,7 @@ Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
 eqnarray.sty"
 Package: subeqnarray 2004/04/15 v2.1c subeqnarray package
 \c@subequation=\count136
-) (acronyms.tex) (shortcuts.tex) (globecomm.aux
-
-LaTeX Warning: Label `group_specific' multiply defined.
-
-
-LaTeX Warning: Label `group_specific_1' multiply defined.
-
-
-LaTeX Warning: Label `group_specific_2' multiply defined.
-
-)
+) (acronyms.tex) (shortcuts.tex) (globecomm.aux)
 \openout1 = `globecomm.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
@@ -598,42 +588,10 @@ Package acronym Info: Label `acro:WSRM' newly defined as it shall be overridden
 
 although it is yet undefined on input line 28.
 Package acronym Info: Label `acro:MIMO' overridden on input line 34.
-
-
-LaTeX Warning: Citation `marzetta2010noncooperative' on page 1 undefined on inp
-ut line 34.
-
-
-LaTeX Warning: Citation `rusek2013scaling' on page 1 undefined on input line 34
-.
-
-
-LaTeX Warning: Citation `boccardi2014five' on page 1 undefined on input line 34
-.
-
 Package acronym Info: Label `acro:DoF' newly defined as it shall be overridden
 although it is yet undefined on input line 34.
 Package acronym Info: Label `acro:CSI' newly defined as it shall be overridden
 although it is yet undefined on input line 34.
-
-LaTeX Warning: Citation `liang2014low' on page 1 undefined on input line 34.
-
-
-LaTeX Warning: Citation `molisch2017hybrid' on page 1 undefined on input line 3
-4.
-
-
-LaTeX Warning: Citation `adhikary2013joint' on page 1 undefined on input line 3
-4.
-
-
-LaTeX Warning: Citation `molisch2017hybrid' on page 1 undefined on input line 3
-4.
-
-
-LaTeX Warning: Citation `adhikary2013joint' on page 1 undefined on input line 3
-4.
-
 Package acronym Info: Label `acro:OBF' overridden on input line 34.
 Package acronym Info: Label `acro:RF' newly defined as it shall be overridden
 although it is yet undefined on input line 34.
@@ -641,53 +599,14 @@ Package acronym Info: Label `acro:IBF' overridden on input line 34.
 Package acronym Info: Label `acro:JSDM' newly defined as it shall be overridden
 
 although it is yet undefined on input line 36.
-
-LaTeX Warning: Citation `adhikary2013joint' on page 1 undefined on input line 3
-6.
-
-
-LaTeX Warning: Citation `adhikary2013joint' on page 1 undefined on input line 3
-6.
-
-
-LaTeX Warning: Citation `nam2014joint' on page 1 undefined on input line 36.
-
-
-LaTeX Warning: Citation `nam2015user' on page 1 undefined on input line 36.
-
-
-LaTeX Warning: Citation `xu2014user' on page 1 undefined on input line 36.
-
-
-LaTeX Warning: Citation `liu2014hierarchical' on page 1 undefined on input line
- 37.
-
-
-LaTeX Warning: Citation `arvola2016two' on page 1 undefined on input line 37.
-
 Package acronym Info: Label `acro:BS' newly defined as it shall be overridden
 although it is yet undefined on input line 39.
-
-LaTeX Warning: Citation `arvola2016two' on page 1 undefined on input line 39.
-
 Package acronym Info: Label `acro:DFT' newly defined as it shall be overridden
 although it is yet undefined on input line 39.
 Package acronym Info: Label `acro:IGI' newly defined as it shall be overridden
 although it is yet undefined on input line 39.
-
-Package acronym Warning: Acronym `IGI' is not defined on input line 39.
-
-
-Package acronym Warning: Acronym `IGI' is not defined on input line 39.
-
-
-LaTeX Warning: Citation `venkatraman2016traffic' on page 1 undefined on input l
-ine 39.
-
-
-Package acronym Warning: Acronym `IGI' is not defined on input line 39.
-
 Package acronym Info: Label `acro:DL' overridden on input line 49.
+
 
 LaTeX Warning: Reference `systemModel' on page 1 undefined on input line 49.
 
@@ -729,39 +648,12 @@ although it is yet undefined on input line 63.
 Package acronym Info: Label `acro:WSRM' overridden on input line 69.
 Package acronym Info: Label `acro:EVD' newly defined as it shall be overridden
 although it is yet undefined on input line 82.
-
-LaTeX Warning: Citation `adhikary2013joint' on page 2 undefined on input line 8
-2.
-
-
-LaTeX Warning: Citation `arvola2016two' on page 2 undefined on input line 82.
-
-
-LaTeX Warning: Citation `adhikary2013joint' on page 2 undefined on input line 8
-8.
-
 [2]
-
-LaTeX Warning: Citation `arvola2016two' on page 3 undefined on input line 96.
-
-
-Package acronym Warning: Acronym `IGI' is not defined on input line 96.
-
-
-Package acronym Warning: Acronym `IGI' is not defined on input line 96.
-
-
-LaTeX Warning: Citation `boyd2004convex' on page 3 undefined on input line 113.
-
-
 Package acronym Info: Label `acro:SCA' newly defined as it shall be overridden
 although it is yet undefined on input line 113.
 
+
 LaTeX Warning: Citation `Scutari2017a' on page 3 undefined on input line 113.
-
-
-LaTeX Warning: Citation `venkatraman2016traffic' on page 3 undefined on input l
-ine 117.
 
 
 Overfull \hbox (16.57114pt too wide) detected at line 121
@@ -771,28 +663,18 @@ n/10 ) \U/msa/m/n/10 , \OT1/cmr/m/n/10 2 [][]\OT1/cmr/bx/n/10 w[] \OMS/cmsy/m/n
 /10   \OT1/cmr/bx/n/10 w[][][]$ 
  []
 
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [3]
-
-LaTeX Warning: Citation `arvola2016two' on page 4 undefined on input line 140.
-
+[3]
 Package acronym Info: Label `acro:KKT' newly defined as it shall be overridden
 although it is yet undefined on input line 144.
 
-LaTeX Warning: Citation `boyd2004convex' on page 4 undefined on input line 144.
-
-
-
-Overfull \hbox (4.44305pt too wide) detected at line 159
+Overfull \hbox (4.44305pt too wide) detected at line 160
  []$[]  \OML/cmm/m/it/10 L\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 []; []; \OT1/cmr/
 bx/n/10 w[]\OML/cmm/m/it/10 ; []; a[]; b[]; c[]; d[]\OT1/cmr/m/n/10 ) = \OMS/c
 msy/m/n/10   [] \OML/cmm/m/it/10 [] []\OT1/cmr/m/n/10 ([])+$ 
  []
 
 
-Overfull \hbox (21.29083pt too wide) detected at line 159
+Overfull \hbox (21.29083pt too wide) detected at line 160
  []$[] \OT1/cmr/m/n/10 + [] \OML/cmm/m/it/10 c[]\OT1/cmr/m/n/10 [[] \OMS/cmsy/m
 /n/10 j\OT1/cmr/bx/n/10 h[]B[]w[]\OMS/cmsy/m/n/10 j[]   []\OT1/cmr/m/n/10 ] + \
 OML/cmm/m/it/10 d[]\OT1/cmr/m/n/10 [[] [] \OMS/cmsy/m/n/10 k\OT1/cmr/bx/n/10 B[
@@ -803,7 +685,18 @@ OML/cmm/m/it/10 d[]\OT1/cmr/m/n/10 [[] [] \OMS/cmsy/m/n/10 k\OT1/cmr/bx/n/10 B[
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
-(globecomm.bbl)
+Overfull \hbox (25.65646pt too wide) in alignment at lines 166--174
+ [] [] [] [][]
+ []
+
+(globecomm.bbl
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ” in font ptmr7t!
+ [4]
+Package acronym Info: Label `acro:MU' newly defined as it shall be overridden
+although it is yet undefined on input line 62.
+)
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -815,12 +708,11 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[4] (globecomm.aux)
+[5
+
+] (globecomm.aux)
 
 LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
 
  )
 (\end occurred inside a group at level 1)
@@ -828,13 +720,13 @@ LaTeX Warning: There were multiply-defined labels.
 ### simple group (level 1) entered at line 1061 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 7601 strings out of 493334
- 116583 string characters out of 3128923
- 226341 words of memory out of 3000000
- 10992 multiletter control sequences out of 15000+200000
- 38570 words of font info for 80 fonts, out of 3000000 for 9000
+ 7639 strings out of 493334
+ 117230 string characters out of 3128923
+ 227498 words of memory out of 3000000
+ 11029 multiletter control sequences out of 15000+200000
+ 39706 words of font info for 81 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 42i,19n,38p,1753b,3927s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 42i,19n,38p,1753b,3926s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Users/apadmana/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/
 dvips/fontname/8r.enc}<C:/Users/apadmana/AppData/Local/Programs/MiKTeX 2.9/font
 s/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/apadmana/AppData/Local/Programs
@@ -858,9 +750,9 @@ ols/msbm10.pfb><C:/Users/apadmana/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
 s/type1/urw/times/utmbi8a.pfb><C:/Users/apadmana/AppData/Local/Programs/MiKTeX 
 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Users/apadmana/AppData/Local/Programs/
 MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on globecomm.pdf (4 pages, 217411 bytes).
+Output written on globecomm.pdf (5 pages, 225630 bytes).
 PDF statistics:
- 88 PDF objects out of 1000 (max. 8388607)
+ 91 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

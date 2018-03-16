@@ -144,29 +144,38 @@
 	An iterative solution for \ref{centralized_design} can be obtained via the \ac{KKT} conditions \cite{boyd2004convex}, of the problem. Since the problem is convex, each \ac{KKT} point is the global optimum of the problem.
 	
 	The \ac{KKT} conditions of the problem can be formulated as follows,
-	\begin{eqarray}{rCL}{group_specific}
+	\begin{eqarray}{rCL}{group_specific_KKT}
 		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}} {\text{maximize}}  & \quad &  \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
-		\text{subject to} &\quad& a_k: \eqref{icassp10} \geq \gamma_k\\
-		&& b_k: \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0 \leq b_{k} \eqspace \label{group_specific_1} \\
-		&&c_k: \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 \leq  \bar{\zeta}_{{g},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_g} \eqspace\ \label{group_specific_2} \\
-		&&d_k: \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq \frac{P_{\mrm{tot}}}{G},  \eqspace 
+		\text{subject to} &\quad& a_k: \eqref{icassp10} \geq \gamma_k \label{group_specific_KKT_1}\\
+		&& b_k: \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0 \leq \beta_{k} \eqspace \label{group_specific_KKT_2} \\
+		&&c_k: \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 \leq  \bar{\zeta}_{{g},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_g} \eqspace\ \label{group_specific_KKT_3} \\
+		&&d_k: \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq \frac{P_{\mrm{tot}}}{G}, \label{group_specific_KKT_4}  \eqspace 
+	\end{eqarray}
+	where $a_k, b_k, c_k$ and $d_k$ are dual variables corresponding to constraints \eqref{group_specific_KKT_1}, \eqref{group_specific_KKT_2}, \eqref{group_specific_KKT_3} and \eqref{group_specific_KKT_4}.
+	
+	Since, the problem in \eqref{group_specific_KKT} is convex, it can be solved using \ac{KKT} expressions. The Lagrangian of \eqref{group_specific_KKT} can be written as
+	\begin{multline}\label{Lag}
+	 L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_k, d_k) = -\sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}}) +  \\  \sum_{k \in \mathcal{U}_g} a_k  [ \gamma_k - 2 \, \dfrac{\bar{\mathbf{w}}_{k}^{ \herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{\bar{\beta_k} \big( \mathbf{w}_{k} - \bar{\mathbf{w}}_{k} )}\big)  \\
+	 - \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \bar{\mathbf{w}}_{k}|^2}{\bar{\beta}_{k}} \Big( 1 - \dfrac{\beta_{k} - \bar{\beta}_{k}}{\bar{\beta}_{k}} \Big)] \\ + \sum_{k \in \mathcal{U}_g} b_k [  \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2  + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0  - \beta_k] \\ + \sum_{k \in \mathcal{U}_g} c_k [ \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 - \bar{\zeta}_{{g},i} ] + d_k [\sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 - \frac{P_{\mrm{tot}}}{G}]
+	\end{multline}
+	Note that the dual variables $d_k$ is associated with the \ac{BS}, wherein the dual variables $a_k, b_k$ and $c_k$ are related to group specific users. Now the optimization problem is given by
+	\begin{equation} \label{KKT_problem}
+			\underset{a_{k}, b_{k}, c_{k}, d_k} {\text{maximize}} \, \;	\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}} {\text{minimize}} \, \, \quad \; L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_k, d_k)
+	\end{equation} 
+	where the solution is obtained by differentiating \eqref{KKT_problem} with respect to each of the associated optimization and dual variable. Note that the objective is reversed in the Lagrangian expression due to the negative operator before the actual sum rate objective in \eqref{Lag}.	Differentiating the \eqref{Lag} with respect to each variable, we obtain,
+	\begin{eqarray}{rCL}{update}
+		\frac{\delta L} {\delta \gamma_k} \Rightarrow a_k^{(i)} &=& \frac{\alpha_k}{(1+ \gamma_k^{(i-1)})}\\
+		\frac{\delta L}{\delta \beta_k} \Rightarrow b_k^{(i)} &=& \frac{| \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{k} |^2}{\bar{\beta}_k} a_k^{(i)} \\
+		\frac{\delta L}{\delta \zeta_{g,k}} \Rightarrow c_k^{(i)} &=& b_k^{(i)} \\
+		\frac{\delta L}{\delta \mbf{w}_k} \Rightarrow \mbf{w}_k^{(i)} &=& \frac{a_k^{(i)}}{2} \big( \sum_{i \in \mc{U}_g , \backslash k}{ b_i^{(i)}} \mathbf{h}_{i}^{\herm} \mathbf{B}_g \mathbf{B}_g^{\herm} \mathbf{h}_{i} + d_k I_{N_T}\big)^{-1} \mathbf{h}_{k}^{\herm} . \eqspace \\
+		\frac{\delta L}{\delta b_k} \Rightarrow \beta_k^{(i)} &=&   \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i}^{(i)} |^2  + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k}^{(i)} + N_0 \\
+		\frac{\delta L}{\delta c_k} \Rightarrow \ \bar{\zeta}_{{g},i}^{(i)}  &=& \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k}^{(i)} |^2\\	
+		\frac{\delta L}{\delta a_k} \Rightarrow \gamma_k^{(i)} &=& 2 \dfrac{\bar{\mathbf{w}}_{k}^{\herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{\bar{\beta}_k} \big( \mathbf{w}_{k}^{(i)} - \bar{\mathbf{w}}_{k}\big) \nonumber \\ &+&  \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \bar{\mathbf{w}}_{k}|^2}{\bar{\beta}_{k}} \Big( 1 - \dfrac{\beta_{k}^{(i)} - \bar{\beta}_{k}}{\bar{\beta}_{k}} \Big).	
 	\end{eqarray}
 	
-	The Lagrangian can be written as
-	\begin{multline}\label{Lag}
-	 L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_k, d_k) = -\sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}}) +  \\  \sum_{k \in \mathcal{U}_g} a_k  [ \gamma_k - 2 \, \dfrac{\mathbf{w}_{k}^{(i) \herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{b^{(i)}_k} \big( \mathbf{w}_{k} - \mathbf{w}_{k}^{(i)}\big) \eqspace \\
-	 + \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}^{(i)}|^2}{b_{k}^{(i)}} \Big( 1 - \dfrac{b_{k} - b_{k}^{(i)}}{b_{k}^{(i)}} \Big)] \\ + \sum_{k \in \mathcal{U}_g} b_k [  \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2  + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0  - \beta_k] \\ + \sum_{k \in \mathcal{U}_g} c_k [ \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 - \bar{\zeta}_{{g},i} ] + d_k [\sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 - \frac{P_{\mrm{tot}}}{G}]
-	\end{multline}
-	
-	Differentiating the \eqref{Lag} with respect to each variable, we obtain,
-	\begin{eqnarray}
-		\frac{\delta L} {\delta \gamma_k} \Rightarrow a_k &=& \frac{1}{(1+ \gamma_k)}\\
-		\frac{\delta L}{\delta \beta_k} \Rightarrow b_k &=& \frac{| \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{k} |^2}{\bar{\beta}_k} a_k \\
-		\frac{\delta L}{\delta \zeta_{g,k}} \Rightarrow c_k &=& b_k \\
-		\frac{\delta L}{\delta \mbf{w}_k} \Rightarrow \mbf{w}_k &=&  .
-	\end{eqnarray}
+	Since the dual variable \me{a_k} depends on the \ac{SINR}, it is obtained by a feasible fixed transmit precoder \me{\mbf{w}_k^{(0)}}. With the help of the fixed transmit precoder, \me{\gamma_k} and \me{\beta_k} can be obtained. Once the value of \me{a_k} value is obtained, rest of the variables are updated as outlined in  \eqref{update}. The dual variable \me{d_k} is obtained the the \ac{BS} such that the total power budget \me{P_{tot}/G} is satisfied by the transmit precoders \me{\mbf{w}_k}. It is usually found by using the bisection search. The about set of \ac{KKT} expressions are solved iteratively until convergence to obtain an efficient set of transmit beamformers for each group. 
 	
 	
-\bibliographystyle{IEEEtranBST2/ieeetran}
-\bibliography{IEEEtranBST2/IEEEabrv,references}	
+	\bibliographystyle{IEEEtranBST2/ieeetran}
+\bibliography{IEEEtranBST2/IEEEabrv,references}
 \end{document}
