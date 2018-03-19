@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9) (preloaded format=pdflatex 2016.11.1)  16 MAR 2018 14:51
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9) (preloaded format=pdflatex 2016.11.1)  19 MAR 2018 09:58
 entering extended mode
 **./globecomm.tex
 (globecomm.tex
@@ -674,26 +674,13 @@ msy/m/n/10   [] \OML/cmm/m/it/10 [] []\OT1/cmr/m/n/10 ([])+$
  []
 
 
-Overfull \hbox (21.29083pt too wide) detected at line 160
- []$[] \OT1/cmr/m/n/10 + [] \OML/cmm/m/it/10 c[]\OT1/cmr/m/n/10 [[] \OMS/cmsy/m
-/n/10 j\OT1/cmr/bx/n/10 h[]B[]w[]\OMS/cmsy/m/n/10 j[]   []\OT1/cmr/m/n/10 ] + \
-OML/cmm/m/it/10 d[]\OT1/cmr/m/n/10 [[] [] \OMS/cmsy/m/n/10 k\OT1/cmr/bx/n/10 B[
-]w[]\OMS/cmsy/m/n/10 k[]   []\OT1/cmr/m/n/10 ]$ []  
- []
+Underfull \vbox (badness 1502) has occurred while \output is active []
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-Overfull \hbox (25.65646pt too wide) in alignment at lines 166--174
- [] [] [] [][]
- []
-
-(globecomm.bbl
+(globecomm.bbl [4]
 Missing character: There is no â in font ptmr7t!
 Missing character: There is no € in font ptmr7t!
 Missing character: There is no ” in font ptmr7t!
- [4]
 Package acronym Info: Label `acro:MU' newly defined as it shall be overridden
 although it is yet undefined on input line 62.
 )
@@ -722,7 +709,7 @@ LaTeX Warning: There were undefined references.
 Here is how much of TeX's memory you used:
  7639 strings out of 493334
  117230 string characters out of 3128923
- 227498 words of memory out of 3000000
+ 228498 words of memory out of 3000000
  11029 multiletter control sequences out of 15000+200000
  39706 words of font info for 81 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -750,7 +737,7 @@ ols/msbm10.pfb><C:/Users/apadmana/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
 s/type1/urw/times/utmbi8a.pfb><C:/Users/apadmana/AppData/Local/Programs/MiKTeX 
 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Users/apadmana/AppData/Local/Programs/
 MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on globecomm.pdf (5 pages, 225630 bytes).
+Output written on globecomm.pdf (5 pages, 225664 bytes).
 PDF statistics:
  91 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
