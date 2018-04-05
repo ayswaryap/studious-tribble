@@ -102,9 +102,9 @@
 	\end{eqarray}
 	where \eqn{\zeta_{\bar{g},k}} limits the interference caused by the neighboring group \eqn{\bar{g} \in \mc{G} \backslash \{g\}} to user \eqn{k \in \mc{U}_g}. By introducing new variable \eqn{\zeta_{\bar{g},k}}, the inner beamformer can be designed for each group independently by exchanging only the group specific interference \eqn{\zeta_{\bar{g},k}} threshold across the groups. Thus, the problem of inner beamformer design is given by
 	\begin{eqarray}{rCL}{icassp8}
-		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}, \mbfa{\zeta}_g} {\text{maximize}}  & \quad & \sum_{g \in \mc{G}} \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})   \nonumber \\
+		\underset{\gamma_{k}, \beta_{k}, \mathbf{w}_{k}, \mbfa{\zeta}_g} {\text{maximize}}  & \quad & \sum_{g \in \mc{G}} \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})   \nonumber \\
 		\text{subject to} &\quad& \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}|^2}{b_{k}} \geq \gamma_{k}, \; \forall k \in \mc{U} \label{icassp8_a}\\
-		&& \sum_{\mathclap{i \in \mathcal{U}_{g_k}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g_k\}}} \zeta_{\bar{g},k} + N_0 \leq b_{k}\eqspace \label{icassp8_b} \\
+		&& \sum_{\mathclap{i \in \mathcal{U}_{g_k}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g_k\}}} \zeta_{\bar{g},k} + N_0 \leq \beta_{k}\eqspace \label{icassp8_b} \\
 		&&\displaystyle\sum_{\substack{k \in \mathcal{U}_{{g_k}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g_k}} \mathbf{w}_{k} |^2 \leq  \zeta_{{g_k},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_{g_k}} \eqspace\ \label{icassp8_d}\\
 		&& \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq P_{\mrm{\mrm{tot}}}  \label{icassp8_e}
 	\end{eqarray}
@@ -112,17 +112,17 @@
 	
 	In spite of relaxing the \ac{SINR} expression in \eqref{icassp5} using \eqref{icassp8_a} and \eqref{icassp8_b}, \eqref{icassp8} is still nonconvex due to the \textit{quadratic-over-linear} constraint \eqref{icassp8_a} \cite{boyd2004convex}. Thus, to solve problem \eqref{icassp8} efficiently, we resort to the \ac{SCA} technique wherein the nonconvex constraint is replaced by a sequence of approximate convex subsets, which is then solved iteratively until convergence \cite{Scutari2017a}. We note that the LHS of \eqref{icassp8} is convex, therefore we resort to the first order Taylor approximation of \textit{quadratic-over-linear} function around some operating point, say, \eqn{\{ \mbf{w}_k^{(i)}, b_k^{(i)} \}}, is given by 
 	\begin{equation} \label{sinr_relax}
-	\dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}|^2}{{b}_{k}} \geq \mathcal{F}_{k}^{(i)} (\mathbf{w}_{k}, {b}_{k};\mathbf{w}_{k}^{(i)}, {b}_{k}^{(i)})
+	\dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}|^2}{{b}_{k}} \geq \bar{\mathcal{F}}_{k} (\mathbf{w}_{k}, {\beta}_{k};\bar{\mathbf{w}}_{k}, \bar{{\beta}}_{k})
 	\end{equation}
-	where the first order approximation \eqn{\mathcal{F}_{k}^{(i)} (\mathbf{w}_{k}, {b}_{k};\mathbf{w}_{k}^{(i)}, {b}_{k}^{(i)})} is an under-estimator for the LHS term in \eqref{sinr_relax} is given by \cite{venkatraman2016traffic}
+	where the first order approximation \eqn{\bar{\mathcal{F}}_{k} (\mathbf{w}_{k}, {b}_{k};\bar{\mathbf{w}}_{k}, {\bar{\beta}_{k}})} is an under-estimator for the LHS term in \eqref{sinr_relax} is given by \cite{venkatraman2016traffic}
 	\begin{multline}\label{icassp10}
-	\mathcal{F}_{k}^{(i)} (\mathbf{w}_{k}, b_{k};\mathbf{w}_{k}^{(i)}, b_{k}^{(i)}) \triangleq 2 \, \dfrac{\mathbf{w}_{k}^{(i) \herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{b^{(i)}_k} \big( \mathbf{w}_{k} - \mathbf{w}_{k}^{(i)}\big) \eqspace \\
-	+ \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \mathbf{w}_{k}^{(i)}|^2}{b_{k}^{(i)}} \Big( 1 - \dfrac{b_{k} - b_{k}^{(i)}}{b_{k}^{(i)}} \Big).
+	\bar{\mathcal{F}}_{k} (\mathbf{w}_{k}, \beta_{k};\bar{\mathbf{w}}_{k}, \bar{\beta}_{k}) \triangleq 2 \, \dfrac{\bar{\mathbf{w}}_{k}^{\herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{\bar{\beta}_k}  \big( \mathbf{w}_{k} - \bar{\mathbf{w}}_{k}\big) \eqspace \\
+	+ \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \bar{\mathbf{w}}_{k}|^2}{\bar{\beta}_{k}} \Big( 1 - \dfrac{\beta_{k} - \bar{\beta}_{k}}{\bar{\beta}_{k}} \Big).
 	\end{multline}
 	
 	Now, by using the above approximation in \eqref{icassp10}, an approximate convex reformulation of \eqref{icassp8} is given by
 	\begin{eqarray}{rCL}{centralized_design}
-		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}, \mbfa{\zeta}_g} {\text{maximize}}  & \quad & \sum_{g \in \mc{G}} \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
+		\underset{\gamma_{k}, \beta_{k}, \mathbf{w}_{k}, \mbfa{\zeta}_g} {\text{maximize}}  & \quad & \sum_{g \in \mc{G}} \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
 		\text{subject to} &\quad& \eqref{icassp8_b}-\eqref{icassp8_e}, \; \eqref{icassp10}.
 	\end{eqarray}
 	The resulting problem \eqref{centralized_design} is solved iteratively until convergence by updating the operating point with the solution obtained from the previous iteration. Thus, upon convergence, the resulting inner beamforming vectors \eqn{\mbf{w}_k \in \mathbb{C}^{S_g \times 1}, \forall k \in \mc{U}_g} determine the linear combination of \ac{OBF} column vectors of \eqn{\mbf{B}_g} that maximizes the overall sum rate of all users.
@@ -130,8 +130,8 @@
 	\subsubsection{Group Specific Beamformer Design}
 	Unlike the centralized approach presented in Section \ref{cent}, the beamformers are designed independently by either fixing the inter-group interference to a fixed value or by ignoring them from the formulation. By doing so, the complexity involved in the design of inner beamformers reduces significantly as the number of optimization variables is limited. Thus, the group specific beamformer design for group \eqn{g \in \mc{G}} is given by
 	\begin{eqarray}{rCL}{group_specific}
-		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}} {\text{maximize}}  & \quad &  \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
-		\text{subject to} &\quad& \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0 \leq b_{k} \eqspace \label{group_specific_1} \\
+		\underset{\gamma_{k}, \beta_{k}, \mathbf{w}_{k}} {\text{maximize}}  & \quad &  \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
+		\text{subject to} &\quad& \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0 \leq \beta_{k} \eqspace \label{group_specific_1} \\
 		&&\sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 \leq  \bar{\zeta}_{{g},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_g} \eqspace\ \label{group_specific_2} \\
 		&& \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq \frac{P_{\mrm{tot}}}{G}, \eqref{icassp8_a}, \text{ and } \eqref{icassp10} \eqspace 
 	\end{eqarray}
@@ -145,28 +145,28 @@
 	
 	The \ac{KKT} conditions of the problem can be formulated as follows,
 	\begin{eqarray}{rCL}{group_specific_KKT}
-		\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}} {\text{maximize}}  & \quad &  \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
+		\underset{\gamma_{k}, \beta_{k}, \mathbf{w}_{k}} {\text{maximize}}  & \quad &  \sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}})  \nonumber \\
 		\text{subject to} &\quad& a_k: \eqref{icassp10} \geq \gamma_k \label{group_specific_KKT_1}\\
 		&& b_k: \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2 + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0 \leq \beta_{k} \eqspace \label{group_specific_KKT_2} \\
-		&&c_k: \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 \leq  \bar{\zeta}_{{g},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_g} \eqspace\ \label{group_specific_KKT_3} \\
-		&&d_k: \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq \frac{P_{\mrm{tot}}}{G}, \label{group_specific_KKT_4}  \eqspace 
+		&&c_{g,i}: \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 \leq  \bar{\zeta}_{{g},i}, \; \forall i \in \mathcal{U} \backslash {\mc{U}_g} \eqspace\ \label{group_specific_KKT_3} \\
+		&&d_g: \sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 \leq \frac{P_{\mrm{tot}}}{G}, \forall g \in \mc{G} \label{group_specific_KKT_4}  \eqspace 
 	\end{eqarray}
-	where $a_k, b_k, c_k$ and $d_k$ are dual variables corresponding to constraints \eqref{group_specific_KKT_1}, \eqref{group_specific_KKT_2}, \eqref{group_specific_KKT_3} and \eqref{group_specific_KKT_4}.
+	where $a_k, b_k, c_{g,i}$ and $d_g$ are dual variables corresponding to constraints \eqref{group_specific_KKT_1}, \eqref{group_specific_KKT_2}, \eqref{group_specific_KKT_3} and \eqref{group_specific_KKT_4}.
 	
 	Since, the problem in \eqref{group_specific_KKT} is convex, it can be solved using \ac{KKT} expressions. The Lagrangian of \eqref{group_specific_KKT} can be written as
 	\begin{multline}\label{Lag}
-	 L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_k, d_k) = -\sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}}) +  \\  \sum_{k \in \mathcal{U}_g} a_k  [ \gamma_k - 2 \, \dfrac{\bar{\mathbf{w}}_{k}^{ \herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{\bar{\beta_k} \big( \mathbf{w}_{k} - \bar{\mathbf{w}}_{k} )}\big)  \\
-	 - \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \bar{\mathbf{w}}_{k}|^2}{\bar{\beta}_{k}} \Big( 1 - \dfrac{\beta_{k} - \bar{\beta}_{k}}{\bar{\beta}_{k}} \Big)] \\ + \sum_{k \in \mathcal{U}_g} b_k [  \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2  + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0  - \beta_k] \\ + \sum_{k \in \mathcal{U}_g} c_k [ \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 - \bar{\zeta}_{{g},i} ] + \\ d_k [\sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 - \frac{P_{\mrm{tot}}}{G}]
+	 L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_{g,i}, d_g) = -\sum_{k \in \mc{U}_g} \alpha_k \log({1 + \gamma_{k}}) +  \\  \sum_{k \in \mathcal{U}_g} a_k  [ \gamma_k - 2 \, \dfrac{\bar{\mathbf{w}}_{k}^{ \herm} \mbf{B}^{\herm}_{g_k} \mbf{h}_{k} \mbf{h}_{k}^{\herm} \mbf{B}_{g_k}}{\bar{\beta_k}} \big( \mathbf{w}_{k} - \bar{\mathbf{w}}_{k} \big)  \\
+	 - \quad \dfrac{|\mathbf{h}_{k}^{\herm} \mathbf{B}_{g_k} \bar{\mathbf{w}}_{k}|^2}{\bar{\beta}_{k}} \Big( 1 - \dfrac{\beta_{k} - \bar{\beta}_{k}}{\bar{\beta}_{k}} \Big)] \\ + \sum_{k \in \mathcal{U}_g} b_k [  \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i} |^2  + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k} + N_0  - \beta_k] \\ + \sum_{k \in \mathcal{U}_g} c_{g,i}[ \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k} |^2 - \bar{\zeta}_{{g},i} ] + \\ d_g [\sum_{g \in \mathcal{G}}\sum_{k \in \mathcal{U}_g} \|\mathbf{B}_g\mathbf{w}_{k} \|^2 - \frac{P_{\mrm{tot}}}{G}]
 	\end{multline}
-	Note that the dual variables $d_k$ is associated with the \ac{BS}, wherein the dual variables $a_k, b_k$ and $c_k$ are related to group specific users. Now the optimization problem is given by
+	Note that the dual variables $d_g$ is associated with the number of user specific groups in the \ac{BS}, wherein the dual variables $a_k, b_k$ and $c_{g,i}$ are related to group specific users. Now the optimization problem is given by
 	\begin{equation} \label{KKT_problem}
-			\underset{a_{k}, b_{k}, c_{k}, d_k} {\text{maximize}} \, \;	\underset{\gamma_{k}, b_{k}, \mathbf{w}_{k}} {\text{minimize}} \, \, \quad \; L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_k, d_k)
+			\underset{a_{k}, b_{k}, c_{g,i}, d_g} {\text{maximize}} \, \;	\underset{\gamma_{k}, \beta_{k}, \mathbf{w}_{k}} {\text{minimize}} \, \, \quad \; L(\gamma_k, \beta_k, \mathbf{w}_k, \zeta_{g,k}, a_k, b_k, c_{g,i}, d_g)
 	\end{equation} 
 	where the solution is obtained by differentiating \eqref{KKT_problem} with respect to each of the associated optimization and dual variable. Note that the objective is reversed in the Lagrangian expression due to the negative operator before the actual sum rate objective in \eqref{Lag}.	Differentiating the \eqref{Lag} with respect to each variable, we obtain,
 	\begin{eqarray}{rCL}{update}
-		\frac{\delta L} {\delta \gamma_k} \Rightarrow a_k^{(i)} &=& \frac{\alpha_k}{(1+ \gamma_k^{(i-1)})}\\
-		\frac{\delta L}{\delta \beta_k} \Rightarrow b_k^{(i)} &=& \frac{| \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{k} |^2}{\bar{\beta}_k} a_k^{(i)} \\
-		\frac{\delta L}{\delta \zeta_{g,k}} \Rightarrow c_k^{(i)} &=& b_k^{(i)} \\
+		\frac{\nabla L} {\nabla \gamma_k} \Rightarrow a_k^{(i)} &=& \frac{\alpha_k}{(1+ \gamma_k^{(i-1)})}\\
+		\frac{\nabla L}{\nabla \beta_k} \Rightarrow b_k^{(i)} &=& \frac{| \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{k} |^2}{\bar{\beta}_k} a_k^{(i)} \\
+		\frac{\nabla L}{\nabla \zeta_{g,k}} \Rightarrow c_k^{(i)} &=& b_k^{(i)} \\
 		\frac{\delta L}{\delta \mbf{w}_k} \Rightarrow \mbf{w}_k^{(i)} &=& \frac{a_k^{(i)}}{2} \big( \sum_{i \in \mc{U}_g , \backslash k}{ b_i^{(i)}} \mathbf{h}_{i}^{\herm} \mathbf{B}_g \mathbf{B}_g^{\herm} \mathbf{h}_{i} \nonumber \\ &+& \sum_{j \in \bar{g}} c_j^{(i)} \mathbf{h}_{j}^{\herm} \mathbf{B}_g \mathbf{B}_g^{\herm} \mathbf{h}_{j} + d_k I_{N_T}\big)^{-1} \mathbf{h}_{k}^{\herm}  \eqspace \\
 		\frac{\delta L}{\delta b_k} \Rightarrow \beta_k^{(i)} &=&   \sum_{\mathclap{i \in \mathcal{U}_{g}\backslash \{k\} }} | \mathbf{h}_{k}^{\herm} \mathbf{B}_g \mathbf{w}_{i}^{(i)} |^2  + \sum_{\mathclap{\bar{g} \in {\mathcal{{G}}} \backslash \{g\}}} \bar{\zeta}_{\bar{g},k}^{(i)} + N_0 \\
 		\frac{\delta L}{\delta c_k} \Rightarrow \ \bar{\zeta}_{{g},i}^{(i)}  &=& \sum_{\substack{k \in \mathcal{U}_{{g}}}} | \mathbf{h}_{i}^{\herm} \mathbf{B}_{{g}} \mathbf{w}_{k}^{(i)} |^2\\	
