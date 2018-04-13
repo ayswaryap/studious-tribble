@@ -14,7 +14,7 @@ for iBeamPerGroup = inParams.nBeamsOverGroups % parfor
     SimParams.chnType = inParams.ChannelType;
     SimParams.SCA = inParams.nSCA;
     SimParams.innerIterations = 25;
-    SimParams.interIterations = 5;
+    SimParams.interIterations = 20;
     
     SimParams.numScatterers = 20;
     SimParams.fixedGroups = 1024;

@@ -7,9 +7,9 @@ else
     gprintf = @nprintf;
 end
 
-cvx_quiet('true');
-cvx_expert('true');
-cvx_solver('sdpt3');
+% cvx_quiet('true');
+% cvx_expert('true');
+% cvx_solver('sdpt3');
 
 alphaM = 0.75;
 sBeamM = SimParams.sBeamM;
@@ -367,11 +367,231 @@ switch precType{1}
         end
         
     case 'KKT'
-        stepFactor = 1;
-        stInstant = 1;
-        incCounter = 1;
         
-        cK = 1e-1 * ones(SimParams.nUsers,1);
+        stInstant = 1;
+        cKG = 5 * ones(SimParams.nUsers,SimParams.nGroups);
+        if length(precType) == 3
+            cKG = str2double(precType{1,3}) * ones(SimParams.nUsers,SimParams.nGroups);
+        end
+        
+        bK = zeros(SimParams.nUsers,1);
+        userGamma = zeros(SimParams.nUsers,1);
+        
+        if length(precType) == 1
+            precType{2} = 'Opt'; % No interference is considered from neighboring group (0) else value can be specified (1 - Inf) (fixed power)
+        end
+        
+        %Generate the user specific channel
+        for iGroup = 1:SimParams.nGroups
+            SimParams.groupInfo(iGroup).userChannel = zeros(SimParams.nReceive,SimParams.nTransmit,SimParams.groupInfo(iGroup).nUsers);
+            for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                SimParams.groupInfo(iGroup).userChannel(:,:,iUser) = getRingChannel(SimParams,iGroup,iUser,SimParams.chnType); %user specific channel
+            end
+        end
+        
+        cvxInnerMP = complex(randn(SimParams.gStatBeams,SimParams.nUsers),...
+            randn(SimParams.gStatBeams,SimParams.nUsers)) / sqrt(2);
+        
+        %cvxInnerMP = (1 - alphaM^alphaPowerReRun) * cvxInnerMP ...
+            %+ alphaM^alphaPowerReRun * initializeSCAPoints(SimParams,'KKT');
+        
+        SimParams = evaluateUserRatesWithGroupPrecoders(SimParams,cvxInnerMP,'CVXG');
+        userBetaP = SimParams.totUserBeta;
+                
+        cvxInnerM = zeros(size(cvxInnerMP));
+        userBeta = zeros(size(userBetaP));
+        
+        %aK = ones(SimParams.nUsers,1) * 0.5;
+        
+        for iGroup = 1:SimParams.nGroups
+            for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                userGammaP(cUserIndex,1) = norm( effChannel * cvxInnerMP(:,cUserIndex)).^2 / userBetaP(cUserIndex,1);
+            end
+        end
+        
+        for iIterations = stInstant:SimParams.innerIterations
+            
+            for interIterations = 1:SimParams.interIterations
+                
+                aK = log2(exp(1))./(1+userGammaP);
+                
+                for iGroup = 1:SimParams.nGroups
+                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                        effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                        bK(cUserIndex,1) = aK(cUserIndex,1) * norm(effChannel * cvxInnerMP(:,cUserIndex))^2 / userBetaP(cUserIndex,1).^2;
+                    end
+                end
+                
+                intermediateY = zeros(SimParams.gStatBeams,SimParams.gStatBeams,SimParams.nUsers);
+                intermediateZ = zeros(SimParams.gStatBeams,SimParams.gStatBeams,SimParams.nGroups);
+                
+                for iGroup = 1:SimParams.nGroups
+                    
+                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                        for jUser = 1:SimParams.groupInfo(iGroup).nUsers
+                            if iUser ~= jUser
+                                xUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,jUser);
+                                effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;
+                                intermediateY(:,:,cUserIndex) = intermediateY(:,:,cUserIndex) + effChannel' * effChannel * bK(xUserIndex,1);
+                            end
+                        end
+                    end
+                    
+                    switch precType{2}
+                        case 'Cen'
+                            for jGroup = 1:SimParams.nGroups
+                                if jGroup ~= iGroup
+                                    for jUser = 1:SimParams.groupInfo(jGroup).nUsers
+                                        yUserIndex = SimParams.groupInfo(jGroup).gUserIndices(1,jUser);
+                                        effChannel = SimParams.groupInfo(jGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;
+                                        intermediateY(:,:,cUserIndex) = intermediateY(:,:,cUserIndex) + effChannel' * effChannel * bK(yUserIndex,1);
+                                    end
+                                end
+                            end
+                        case 'Opt'
+                            for jGroup = 1:SimParams.nGroups
+                                if jGroup ~= iGroup
+                                    for jUser = 1:SimParams.groupInfo(jGroup).nUsers
+                                        yUserIndex = SimParams.groupInfo(jGroup).gUserIndices(1,jUser);
+                                        effChannel = SimParams.groupInfo(jGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;
+                                        intermediateZ(:,:,iGroup) = intermediateZ(:,:,iGroup) + effChannel' * effChannel * cKG(yUserIndex,iGroup);
+                                    end
+                                end
+                            end
+                        case 'Ignore'
+                            % nothing performed (neighboring interference is not considered
+                        otherwise
+                            for jGroup = 1:SimParams.nGroups
+                                if jGroup ~= iGroup
+                                    for jUser = 1:SimParams.groupInfo(jGroup).nUsers
+                                        xUserIndex = SimParams.groupInfo(jGroup).gUserIndices(1,jUser);
+                                        effChannel = SimParams.groupInfo(jGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;
+                                        intermediateZ(:,:,iGroup) = intermediateZ(:,:,iGroup) + str2double(precType{1,2}) * eye(SimParams.gstatBeams) * cKG(xUserIndex,iGroup);
+                                    end
+                                end
+                            end
+                    end
+                end
+                
+                for iGroup = 1:SimParams.nGroups
+                    
+                    wTemp = zeros(SimParams.groupInfo(iGroup).nUsers,SimParams.gStatBeams);
+                    wOverall = zeros(SimParams.groupInfo(iGroup).nUsers,SimParams.gStatBeams);
+                    
+                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                        effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                        wTemp(iUser,:) = (aK(cUserIndex,1) * cvxInnerMP(:,cUserIndex)' * (effChannel' * effChannel) ) / userBetaP(cUserIndex,1);
+                    end
+                    
+                    muMax = 1e5;
+                    muMin = 0;
+                    iterateAgain = 1;
+                    
+                    while iterateAgain
+                        currentMu = (muMax + muMin) / 2;
+                        for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                            cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                            wOverall(iUser,:) = wTemp(iUser,:) * pinv(intermediateY(:,:,cUserIndex) + intermediateZ(:,:,iGroup) + (SimParams.groupInfo(iGroup).statBeams' * SimParams.groupInfo(iGroup).statBeams) * currentMu);
+                        end
+                        
+                        totalPower = real(trace(SimParams.groupInfo(iGroup).statBeams * (wOverall' * wOverall) * SimParams.groupInfo(iGroup).statBeams'));
+                        
+                        if totalPower > (SimParams.txPower / SimParams.nGroups)
+                            muMin = currentMu;
+                        else
+                            muMax = currentMu;
+                        end
+                        
+                        if (muMax - muMin) <= 1e-3
+                            iterateAgain = 0;
+                        end
+                    end
+                    
+                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                        cvxInnerM(:,cUserIndex) = wOverall(iUser,:)';
+                    end
+                    
+                end
+                
+                
+                %%%%%%%%%%%% Calculate Interference term beta
+                
+                for iGroup = 1:SimParams.nGroups
+                    
+                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                        effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                        userBeta(cUserIndex,1) = SimParams.N0;
+                        
+                        %Intra-Group Interference calculation
+                        for jUser = 1:SimParams.groupInfo(iGroup).nUsers
+                            if jUser ~= iUser
+                                xUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,jUser);
+                                userBeta(cUserIndex,1) = userBeta(cUserIndex,1) + norm(effChannel * cvxInnerM(:,xUserIndex))^2;
+                            end
+                        end
+                        
+                        %Inter-Group Interference Calculation
+                        for jGroup = 1:SimParams.nGroups
+                            if jGroup ~= iGroup
+                                switch precType{2}
+                                    case 'Opt'
+                                        effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(jGroup).statBeams;
+                                        userBeta(cUserIndex,1) = userBeta(cUserIndex,1) + norm(effChannel * cvxInnerM(:,SimParams.groupInfo(jGroup).gUserIndices))^2;
+                                    case 'Ignore'
+                                        % nothing performed (neighboring interference is not considered
+                                    otherwise
+                                        userBeta(cUserIndex,1) = userBeta(cUserIndex,1) +  str2double(precType{2});
+                                end
+                            end
+                        end
+                    end
+                    
+                end
+                
+                %Update Gamma
+                
+                for iGroup = 1:SimParams.nGroups
+                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                        effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                        userGamma(cUserIndex,1) = norm( effChannel * cvxInnerM(:,cUserIndex)).^2 / userBeta(cUserIndex,1);
+                    end
+                end
+                
+                % Updating for next iteration
+                
+                userBetaP = userBeta;
+                cvxInnerMP = cvxInnerM;
+                userGammaP = real(userGamma) .* real(userGamma>0);
+
+                
+                SimParams = evaluateUserRatesWithGroupPrecoders(SimParams,cvxInnerM,'CVXG');
+                SimParams.groupSumRate.srate(iIterations,interIterations) = sum(SimParams.totUserRateE);
+                SimParams.groupSumRate.tsca(iIterations,1) = interIterations;
+                SimParams.groupSumRate.isSucceded(iIterations,1) = 1;
+                
+            end
+        end
+        
+        
+        %end
+        %end
+        
+        
+    case 'KKTU'
+        
+        stInstant = 1;
+        cKG = 10 * ones(SimParams.nUsers,SimParams.nGroups);
+        
+        aK = zeros(SimParams.nUsers,1);
+        bK = zeros(SimParams.nUsers,1);
         
         if length(precType) == 1
             precType{2} = 'Opt'; % No interference is considered from neighboring group (0) else value can be specified (1 - Inf) (fixed power)
@@ -386,149 +606,199 @@ switch precType{1}
             end
         end
         
-        %while alphaPowerReRun
-        
-        %tStart = tic;
         cvxInnerMP = complex(randn(SimParams.gStatBeams,SimParams.nUsers),...
             randn(SimParams.gStatBeams,SimParams.nUsers)) / sqrt(2);
         
-        cvxInnerMP = (1 - alphaM^alphaPowerReRun) * cvxInnerMP ...
-            + alphaM^alphaPowerReRun * initializeSCAPoints(SimParams,'KKT');
+        %cvxInnerMP = (1 - alphaM^alphaPowerReRun) * cvxInnerMP ...
+           % + alphaM^alphaPowerReRun * initializeSCAPoints(SimParams,'CVXG');
         
-        SimParams = evaluateUserRatesWithGroupPrecoders(SimParams,cvxInnerMP,'KKT');
+        SimParams = evaluateUserRatesWithGroupPrecoders(SimParams,cvxInnerMP,'CVXG');
         userBetaP = SimParams.totUserBeta;
-        userGammaP = SimParams.totuserGamma;
+        %userGammaP = SimParams.totuserGamma;
+        
+        cvxInnerM = zeros(size(cvxInnerMP));
+        userBeta = zeros(size(userBetaP));
+        
+        for iGroup = 1:SimParams.nGroups
+            for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                userGammaP(cUserIndex,1) = norm( effChannel * cvxInnerMP(:,cUserIndex)).^2 / userBetaP(cUserIndex,1);
+            end
+        end
+        
+        userGamma = zeros(size(userGammaP));
+        %aK = ones(SimParams.nUsers,1) * 0.9;
+        
+        %aK = log2(exp(1))./(1+userGammaP);
         
         for iIterations = stInstant:SimParams.innerIterations
             
-            stepG = stepFactor;
+            phiK = sqrt(userGammaP ./ userBetaP);
             
             for interIterations = 1:SimParams.interIterations
                 
-                stepG = stepG * 0.9;
-                aK = 1./(1+userGammaP); %Dual variable aK
                 
-                for iGroup = 1:SimParams.nGroups
-                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
-                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
-                        effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
-                        realRatio(cUserIndex,1) = real(effChannel * cvxInnerMP(:,cUserIndex));
-                        sqVal(cUserIndex,1) = realRatio(cUserIndex,1).^2;
-                    end
-                end
-                intermediateX = sqVal./(userBetaP).^2;
-                bK = aK .* intermediateX; %Dual variable bK
+                
+                aK = log2(exp(1)) * 2 * phiK ./ (1 + userGammaP);
+                
+                %                 for iGroup = 1:SimParams.nGroups
+                %                     for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                %                         cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                %                         effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                %                         bK(cUserIndex,1) = aK(cUserIndex,1) * norm(effChannel * cvxInnerMP(:,cUserIndex))^2 / userBetaP(cUserIndex,1).^2;
+                %                     end
+                %                 end
+                
+                %bK = max(bK,0);
+                
+                bK = 0.5 * aK .* phiK;
                 
                 intermediateY = zeros(SimParams.gStatBeams,SimParams.gStatBeams,SimParams.nUsers);
-                intermediateZ = zeros(SimParams.gStatBeams,SimParams.gStatBeams,SimParams.nUsers);
+                intermediateZ = zeros(SimParams.gStatBeams,SimParams.gStatBeams,SimParams.nGroups);
                 
                 for iGroup = 1:SimParams.nGroups
+                    
                     for iUser = 1:SimParams.groupInfo(iGroup).nUsers
-                        intermediateY(:,:,iUser) = zeros(SimParams.gStatBeams,SimParams.gStatBeams);
-                        xUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
-                        effChan = SimParams.groupInfo(iGroup).userChannel(:,:,xUserIndex) * SimParams.groupInfo(iGroup).statBeams;
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
                         for jUser = 1:SimParams.groupInfo(iGroup).nUsers
                             if iUser ~= jUser
+                                xUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,jUser);
                                 effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;
-                                intermediateY(:,:,iUser) = intermediateY(:,:,iUser) + effChannel'*effChannel * bK(jUser,1);
+                                intermediateY(:,:,cUserIndex) = intermediateY(:,:,cUserIndex) + effChannel' * effChannel * bK(xUserIndex,1);
                             end
                         end
                     end
                     
-                    if any(strcmpi(precType{2},{'Opt'}))
-                        for jGroup = 1:SimParams.nGroups
-                            if jGroup ~= iGroup
-                                for jUser = 1:SimParams.groupInfo(jGroup).nUsers
-                                    %jUserIndex = SimParams.groupInfo(jGroup).gUserIndices(1,jUser);
-                                    effChannel = SimParams.groupInfo(jGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;% * cvxInnerMP(:,SimParams.groupInfo(iGroup).gUserIndices);
-                                    intermediateZ(:,:,jUser) = intermediateZ(:,:,jUser) + effChannel'*effChannel * cK(jUser,1);
-                                    %{neighborIF.',groupBeta(jUserIndex,iGroup),1} <In> rotated_complex_lorentz(length(neighborIF));
+                    switch precType{2}
+                        case 'Opt'
+                            for jGroup = 1:SimParams.nGroups
+                                if jGroup ~= iGroup
+                                    for jUser = 1:SimParams.groupInfo(jGroup).nUsers
+                                        yUserIndex = SimParams.groupInfo(jGroup).gUserIndices(1,jUser);
+                                        effChannel = SimParams.groupInfo(jGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;
+                                        intermediateY(:,:,iGroup) = intermediateY(:,:,iGroup) + effChannel' * effChannel * cKG(yUserIndex,iGroup);
+                                    end
                                 end
                             end
-                        end
+                        case 'Ignore'
+                            % nothing performed (neighboring interference is not considered
+                        otherwise
+                            for jGroup = 1:SimParams.nGroups
+                                if jGroup ~= iGroup
+                                    for jUser = 1:SimParams.groupInfo(jGroup).nUsers
+                                        xUserIndex = SimParams.groupInfo(jGroup).gUserIndices(1,jUser);
+                                        effChannel = SimParams.groupInfo(jGroup).userChannel(:,:,jUser) * SimParams.groupInfo(iGroup).statBeams;
+                                        intermediateZ(:,:,iGroup) = intermediateZ(:,:,iGroup) + effChannel' * effChannel * cKG(xUserIndex,iGroup);
+                                    end
+                                end
+                            end
                     end
                 end
                 
                 for iGroup = 1:SimParams.nGroups
+                    
+                    wTemp = zeros(SimParams.groupInfo(iGroup).nUsers,SimParams.gStatBeams);
+                    wOverall = zeros(SimParams.groupInfo(iGroup).nUsers,SimParams.gStatBeams);
+                    
+%                     for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+%                         cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+%                         effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+%                         wTemp(iUser,:) = (aK(cUserIndex,1) * cvxInnerMP(:,cUserIndex)' * (effChannel' * effChannel) )./ userBetaP(cUserIndex,1);
+%                     end
+                    
                     muMax = 100000;
                     muMin = 0;
                     iterateAgain = 1;
-                    nBands = 1;
+                    
                     while iterateAgain
-                        totalPower = 0;
                         currentMu = (muMax + muMin) / 2;
-                        for iBand = 1:nBands
-                            for iUser = 1:SimParams.groupInfo(iGroup).nUsers
-                                effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
-                                cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
-                                
-                                %Dual variable update w
-                                %interVal(:,cUserIndex) = aK(cUserIndex,1) * (effChannel*effChannel' * cvxInnerMP(:,cUserIndex))./userBetaP(cUserIndex,1);
-                                cvxInnerM(:,cUserIndex) = aK(cUserIndex,1) * ( pinv(currentMu * eye(SimParams.nTransmit) + intermediateY(:,:,cUserIndex)) + intermediateZ(:,:,cUserIndex)) * (effChannel*effChannel' * cvxInnerMP(:,cUserIndex)) ./userBetaP(cUserIndex,1);
-                                totalPower = totalPower + real(trace(cvxInnerM(:,cUserIndex) * cvxInnerM(:,cUserIndex)'));
-                            end
+                        for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                            cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                            effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
+                            wOverall(iUser,:) = 0.5 *  aK(cUserIndex,1) * (pinv(intermediateY(:,:,cUserIndex) + intermediateZ(:,:,iGroup) + (SimParams.groupInfo(iGroup).statBeams' * SimParams.groupInfo(iGroup).statBeams) * currentMu)) * effChannel';
+                            %wOverall(iUser,:) =  pinv(intermediateY(:,:,cUserIndex) + intermediateZ(:,:,iGroup) + (SimParams.groupInfo(iGroup).statBeams' * SimParams.groupInfo(iGroup).statBeams) * currentMu) * wTemp(iUser,:)';
                         end
                         
-                        if totalPower > sum(SimParams.txPower)
+                        totalPower = real(trace(SimParams.groupInfo(iGroup).statBeams * (wOverall' * wOverall) * SimParams.groupInfo(iGroup).statBeams'));
+                        
+                        if totalPower > (SimParams.txPower / SimParams.nGroups)
                             muMin = currentMu;
                         else
                             muMax = currentMu;
                         end
                         
-                        if abs(SimParams.txPower / SimParams.nGroups - sum(SimParams.txPower)) <= 1e-6
+                        if (muMax - muMin) <= 1e-6
                             iterateAgain = 0;
                         end
                     end
                     
+                    for iUser = 1:SimParams.groupInfo(iGroup).nUsers
+                        cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
+                        cvxInnerM(:,cUserIndex) = wOverall(iUser,:)';
+                    end
+                    
                 end
                 
                 
+                %%%%%%%%%%%% Calculate Interference term beta
                 
-                %%%%%%%%%%%% Calculate Interference
-                for iGroup = SimParams.nGroups
+                for iGroup = 1:SimParams.nGroups
                     
                     for iUser = 1:SimParams.groupInfo(iGroup).nUsers
                         cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
                         effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
-                        totalIF = sqrt(SimParams.N0);
+                        userBeta(cUserIndex,1) = SimParams.N0;
+                        %Intra-Group Interference calculation
                         for jUser = 1:SimParams.groupInfo(iGroup).nUsers
                             if jUser ~= iUser
                                 xUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,jUser);
-                                totalIF = [totalIF, abs(effChannel * cvxInnerM(:,xUserIndex))^2];
+                                userBeta(cUserIndex,1) = userBeta(cUserIndex,1) + norm(effChannel * cvxInnerM(:,xUserIndex))^2;
                             end
                         end
                         
-                        switch precType{2}
-                            case 'Opt'
-                                totalIF = [totalIF, userBetaP(cUserIndex,:)];
-                            case 'Ignore'
-                                % nothing performed (neighboring interference is not considered
-                            otherwise
-                                totalIF = [totalIF, sqrt(str2double(precType{2})) * ones(1,SimParams.nGroups - 1)];
+                        for jGroup = 1:SimParams.nGroups
+                            if jGroup ~= iGroup
+                                switch precType{2}
+                                    case 'Opt'
+                                        effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(jGroup).statBeams;
+                                        userBeta(cUserIndex,1) = userBeta(cUserIndex,1) + norm(effChannel * cvxInnerM(:,SimParams.groupInfo(jGroup).gUserIndices))^2;
+                                    case 'Ignore'
+                                        % nothing performed (neighboring interference is not considered
+                                    otherwise
+                                        userBeta(cUserIndex,1) = userBeta(cUserIndex,1) +  str2double(precType{2});
+                                end
+                            end
                         end
-                        
-                        %userBetaP = totalIF;
-                        
                     end
+                    
                 end
+                
                 %Update Gamma
                 for iGroup = 1:SimParams.nGroups
                     for iUser = 1:SimParams.groupInfo(iGroup).nUsers
                         cUserIndex = SimParams.groupInfo(iGroup).gUserIndices(1,iUser);
                         effChannel = SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams;
-                        prevGamma = (2 * (effChannel'* effChannel * cvxInnerMP(:,cUserIndex))) .* (cvxInnerM - cvxInnerMP)  ./ userBetaP(cUserIndex,1);
-                        userGammaP(iUser,1) = prevGamma(iUser,1) + ((norm(effChannel * cvxInnerMP)^2 ./ userBetaP(cUserIndex,1)) .* (1 - ( (totalIF(1,cUserIndex)' - userBetaP(cUserIndex,1))./userBetaP(cUserIndex,1) )  ));
+                        userGamma(cUserIndex,1) = (abs(effChannel * cvxInnerMP(:,cUserIndex)) - 0.5 * phiK(cUserIndex,1) * userBetaP(cUserIndex,1)) * 2 ./ phiK(cUserIndex,1);
+                        %userGamma(cUserIndex,1)  = userGamma(cUserIndex,1)  + prevGamma * 0.1;
+                        %prevGamma = 2 * cvxInnerMP(:,cUserIndex)' * (effChannel' * effChannel) * (cvxInnerM(:,cUserIndex) - cvxInnerMP(:,cUserIndex))  ./ userBetaP(cUserIndex,1);
+                        %userGamma(cUserIndex,1) = prevGamma + (norm(effChannel * cvxInnerMP(:,cUserIndex))^2 ./ userBetaP(cUserIndex,1)) * (1 - ((userBeta(cUserIndex,1) - userBetaP(cUserIndex,1)) / userBetaP(cUserIndex,1)));
                     end
                 end
                 
-                userGammaP = real(userGammaP) .* (real(userGammaP)>0);
-                targetRate(incCounter,1) = sum(log(1+userGammaP));
-                userRate(incCounter,1) = log(1+userGammaP.');
-                incCounter = incCounter + 1;
-                SimParams.groupSumRate.srate(incCounter,1) = targetRate(incCounter,1);
+                % Updating for next iteration
+
+                userGammaP = real(userGamma) .* (real(userGamma) > 0);
+
+                userBetaP = userBeta;
+                cvxInnerMP = cvxInnerM;
+                
+                SimParams = evaluateUserRatesWithGroupPrecoders(SimParams,cvxInnerM,'CVXG');
+                SimParams.groupSumRate.srate(iIterations,interIterations) = sum(SimParams.totUserRateE);
+                SimParams.groupSumRate.tsca(iIterations,1) = interIterations;
+                SimParams.groupSumRate.isSucceded(iIterations,1) = 1;
                 
             end
-            
         end
 end
 

@@ -141,7 +141,7 @@ switch precType
                     if jGroup ~= iGroup
                         for jUser = 1:SimParams.groupInfo(jGroup).nUsers
                             xUserIndex = SimParams.groupInfo(jGroup).gUserIndices(1,jUser);
-                            totalIF = [totalIF, SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(jGroup).statBeams * cvxInnerM(:,xUserIndex)];
+                            totalIF = [totalIF, SimParams.groupInfo(iGroup).userChannel(:,:,iUser) * SimParams.groupInfo(iGroup).statBeams * cvxInnerM(:,xUserIndex)];
                         end
                     end
                 end
